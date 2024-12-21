@@ -4,9 +4,6 @@ import { ChatResponse, Ollama } from 'ollama';
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
 
-const ollama = new Ollama({ host: process.env.NGROK_OLLAMA_URL || ''
- })
-
 function createReadableStream(generator: AsyncGenerator<ChatResponse>): ReadableStream {
   // Create a new ReadableStream using the provided generator
   const stream = new ReadableStream({
@@ -28,52 +25,46 @@ function createReadableStream(generator: AsyncGenerator<ChatResponse>): Readable
 }
 
 export default async function POST(req: Request) {
+  // Extract the `messages` from the body of the request
+  const { messages } = await req.json()
+
+  // Get the last message as input
+  const input = messages[messages.length - 1].content;
+
+  // Default to port 3000 if not specified
+  const serverPort = "3000"
+  const agentId = "4b386bfa-1ab6-0a8d-b9f2-9b2291028b78"
+
+  // Call the local agent server
+  let response;
   try {
-    const { messages } = await req.json();
-    // get last message
-    const lastMessage = messages[messages.length - 1];
+    response = await fetch(
+      `http://localhost:${serverPort}/${agentId}/message`,
+      {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: input,
+          userId: "user",
+          userName: "User",
+        }),
+      } 
+    );
 
-    // extract youtube url from last message
-    const youtubeUrl = lastMessage.content.match(/(https:\/\/www\.youtube\.com\/watch\?v=[a-zA-Z0-9_-]+)/g);
-    let textData = '';
-
-    // remove youtube url from last message
-    if (youtubeUrl && youtubeUrl.length > 0) {
-      lastMessage.content = lastMessage.content.replace(youtubeUrl[0], '');
-
-      // make post request to remote endpoint with videoUrl
-      const apiResponse = await fetch('https://api.trendsagent.ai/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apiKey': '',
-        },
-        body: JSON.stringify({ videoUrl: youtubeUrl[0] })
-      });
-
-      const [data] = await apiResponse.json();
-      const { text } = data;
-      textData = text;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // Extract the `messages` from the body of the request
-    const response = await ollama.chat({
-      model: 'llama3',
-      messages: [
-        {
-          role: 'user',
-          content: lastMessage.content + " " + textData,
-        },
-      ],
-      stream: true,
-    });
+    const data = await response.json();
+    console.log(data);
 
-    // Create a new ReadableStream using the provided generator
-    const stream = createReadableStream(response);
+    // Extract the text from the first response
+    const responseText = data[0].text;
 
-    return new StreamingTextResponse(stream);
+    return new Response(responseText);
   } catch (error) {
-    console.error(error);
-    return new Response('Internal Server Error', { status: 500 });
+    console.error('Error:', error);
+    throw new Error('Failed to fetch from agent server');
   }
+  
 }

@@ -190,8 +190,8 @@ export default function Home() {
             {solBalance && <div className="text-white mt-2">Balance: {solBalance} TRENDS</div>}
           </div>
           <div
-            className="max-w-screen-md flex-1 flex flex-col h-[100svh] items-center p-5 sm:p-7 gap-5 sm:gap-7 overflow-hidden">
-            <div className="flex-1 w-full overflow-auto" ref={messageBodyRef}>
+            className="max-w-screen-md flex-1 flex flex-col h-[100svh] items-center p-8 sm:p-9 gap-5 sm:gap-7 overflow-hidden">
+            <div className="flex-1 w-full overflow-auto mt-10" ref={messageBodyRef}>
               <motion.div initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 2, delay: 0.5 }}>
                 {
