@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from 'ai/react'
 import { AiOutlineArrowUp, AiOutlineLoading } from "react-icons/ai";
 import Head from "next/head";
@@ -32,10 +32,42 @@ function LoginOverlay() {
   );
 }
 
+function InsufficientBalanceModal({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <motion.div 
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.5, opacity: 0 }}
+        className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md mx-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold mb-4 text-white">Insufficient Balance</h2>
+        <p className="text-gray-300 mb-6">
+          You need at least 2 TRENDS tokens to use this feature. Please acquire more tokens to continue.
+        </p>
+        <button
+          onClick={onClose}
+          className="bg-purple-500 hover:bg-purple-400 text-white px-4 py-2 rounded-full transition-colors duration-300"
+        >
+          Close
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function Home() {
   const { messages, input, handleInputChange, isLoading, handleSubmit } = useChat();
   const { primaryWallet } = useDynamicContext();
   const [solBalance, setSolBalance] = useState<string>('');
+  const [showBalanceWarning, setShowBalanceWarning] = useState(false);
   const wallet = primaryWallet?.address;
 
   useEffect(() => {
@@ -110,20 +142,30 @@ export default function Home() {
 
   const isLoggedIn = !!primaryWallet;
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const balance = parseFloat(solBalance);
+    if (balance < 2) {
+      setShowBalanceWarning(true);
+      return;
+    }
+    handleSubmit(e as any);
+  };
+
   return (
     <>
       <Head>
         <title>Agent Trends</title>
-        <meta name="description" content="AI enabled youtube video transcript summarizer." />
+        <meta name="description" content="AI powered social trend analyzer and insights platform." />
         <meta name="twitter:site" content="@AgentTrends" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={"Agent Trends - youtube video transcript summarizer."} />
-        <meta name="twitter:description" content="AI enabled youtube video transcript summarizer." />
+        <meta name="twitter:title" content={"Agent Trends - AI Social Trend Analyzer"} />
+        <meta name="twitter:description" content="AI powered social trend analyzer and insights platform." />
         {/* <meta name="twitter:image" content="https://agentgpt.reworkd.ai/banner.png" /> */}
         {/* <meta name="twitter:image:width" content="1280" />
         {/* <meta name="twitter:image:height" content="640" /> */}
-        <meta property="og:title" content={"Agent Trends - youtube video transcript summarizer."} />
-        <meta property="og:description" content="AI enabled youtube video transcript summarizer." />
+        <meta property="og:title" content={"Agent Trends - AI Social Trend Analyzer"} />
+        <meta property="og:description" content="AI powered social trend analyzer and insights platform." />
         {/* <meta property="og:url" content="https://agentgpt.reworkd.ai/" /> */}
         {/* <meta property="og:image" content="https://agentgpt.reworkd.ai/banner.png" /> */}
         {/* <meta property="og:image:width" content="1280" />
@@ -134,6 +176,12 @@ export default function Home() {
       <Analytics />
 
       {!isLoggedIn && <LoginOverlay />}
+
+      <AnimatePresence>
+        {showBalanceWarning && (
+          <InsufficientBalanceModal onClose={() => setShowBalanceWarning(false)} />
+        )}
+      </AnimatePresence>
 
       {isLoggedIn && (
         <div className="bg-zinc-900 h-[100svh] w-screen flex items-center justify-center font-sans">
@@ -183,16 +231,16 @@ export default function Home() {
 
             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 2, delay: 0.5 }} className="w-full">
-              <form onSubmit={handleSubmit} className=" bg-white/5 p-1.5 text-lg rounded-full relative w-full">
+              <form onSubmit={handleFormSubmit} className=" bg-white/5 p-1.5 text-lg rounded-full relative w-full">
                 <input
                   className="text-white w-full p-3 pl-5 pr-14 bg-transparent rounded-full border-[2px] border-white/5 hover:border-white/20 focus:border-blue-400 outline-0 transition-all duration-500"
                   value={input}
-                  placeholder="Ask Quentino AI to summarize a youtube video..."
+                  placeholder="Ask TrendsAgent to analyze latest trends..."
                   onChange={handleInputChange}
                 />
                 <div
                   className={`absolute right-4 top-3.5 bg-purple-500 hover:bg-purple-400 p-2 rounded-full transition-colors duration-500 cursor-pointer`}
-                  onClick={(e) => handleSubmit(e as any)}
+                  onClick={handleFormSubmit}
                 >
                   {isLoading ? <AiOutlineLoading size={25} className="animate-spin" /> : <AiOutlineArrowUp size={25} />}
                 </div>
