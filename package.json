@@ -12,6 +12,8 @@
     "@dynamic-labs/sdk-react-core": "^3.9.4",
     "@dynamic-labs/solana": "^3.9.4",
     "@dynamic-labs/wagmi-connector": "^3.9.4",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.98.0",
     "@types/node": "20.4.5",
     "@types/react": "18.2.17",
     "@types/react-dom": "18.2.7",
