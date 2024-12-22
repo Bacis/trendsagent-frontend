@@ -23,12 +23,32 @@ function chunkString(str: string): string[] {
 
 function LoginOverlay() {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-5 rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Please log in to continue</h2>
-        <DynamicWidget />
-      </div>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+    >
+      <motion.div 
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.5, opacity: 0 }}
+        className="flex min-h-[200px] items-center justify-center bg-zinc-800 bg-opacity-90 p-8 rounded-xl shadow-lg"
+      >
+        <div className="text-center flex flex-col items-center justify-center">
+          <h2 className="text-xl font-bold mb-6 text-white w-80">Welcome to Agent Trends terminal!</h2>
+          <DynamicWidget 
+            innerButtonComponent={
+              <button className="group relative flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-purple-500 hover:to-indigo-500 hover:shadow-purple-500/25 active:scale-95">
+                <span className="relative">
+                  Login
+                </span>
+              </button>
+            }
+          />
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

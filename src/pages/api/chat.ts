@@ -1,19 +1,16 @@
 import { StreamingTextResponse } from 'ai'
-import { ChatResponse, Ollama } from 'ollama';
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
 
-function createReadableStream(generator: AsyncGenerator<ChatResponse>): ReadableStream {
-  // Create a new ReadableStream using the provided generator
+function createReadableStream(responseText: string): ReadableStream {
+  // Create a new ReadableStream from the response text
   const stream = new ReadableStream({
-    async start(controller) {
+    start(controller) {
       const encoder = new TextEncoder();
       try {
-        for await (const chunk of generator) {
-          // Convert the chunk into bytes and enqueue into the stream
-          controller.enqueue(encoder.encode(chunk.message.content));
-        }
+        // Encode and enqueue the entire response text
+        controller.enqueue(encoder.encode(responseText));
         controller.close();
       } catch (error) {
         controller.error(error);
@@ -31,15 +28,14 @@ export default async function POST(req: Request) {
   // Get the last message as input
   const input = messages[messages.length - 1].content;
 
-  // Default to port 3000 if not specified
-  const serverPort = "3000"
-  const agentId = "4b386bfa-1ab6-0a8d-b9f2-9b2291028b78"
+  const agentId = process.env.AGENT_ID || ""
+  const url = process.env.AGENT_URL || ""
 
   // Call the local agent server
   let response;
   try {
     response = await fetch(
-      `http://localhost:${serverPort}/${agentId}/message`,
+      `${url}/${agentId}/message`,
       {
         method: "POST", 
         headers: { "Content-Type": "application/json" },
@@ -58,13 +54,23 @@ export default async function POST(req: Request) {
     const data = await response.json();
     console.log(data);
 
-    // Extract the text from the first response
-    const responseText = data[0].text;
+    // Safely handle the response data
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      throw new Error('Invalid response from agent server');
+    }
 
-    return new Response(responseText);
+    // Extract the text from the first response, ensuring it exists
+    const responseText = data[0]?.text || '';
+
+    // Create a readable stream from the response text
+    const stream = createReadableStream(responseText);
+    return new StreamingTextResponse(stream);
+
   } catch (error) {
     console.error('Error:', error);
-    throw new Error('Failed to fetch from agent server');
+    return new Response(JSON.stringify({ error: 'Failed to fetch from agent server' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-  
 }
