@@ -6,6 +6,7 @@ import Head from "next/head";
 import { Analytics } from '@vercel/analytics/react';
 import { DynamicWidget, useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Connection, PublicKey } from '@solana/web3.js';
+import ReactMarkdown from 'react-markdown';
 
 function chunkString(str: string): string[] {
   const words: string[] = str.split(" ");
@@ -27,22 +28,23 @@ function LoginOverlay() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <motion.div 
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.5, opacity: 0 }}
-        className="flex min-h-[200px] items-center justify-center bg-zinc-800 bg-opacity-90 p-8 rounded-xl shadow-lg"
+        className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md mx-4"
       >
-        <div className="text-center flex flex-col items-center justify-center">
-          <h2 className="text-xl font-bold mb-6 text-white w-80">Welcome to Agent Trends terminal!</h2>
+        <h2 className="text-xl font-bold mb-4 text-white">Welcome to Agent Trends terminal!</h2>
+        <p className="text-gray-300 mb-6">
+          Please connect your wallet to access the terminal.
+        </p>
+        <div className="flex justify-center">
           <DynamicWidget 
             innerButtonComponent={
-              <button className="group relative flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-purple-500 hover:to-indigo-500 hover:shadow-purple-500/25 active:scale-95">
-                <span className="relative">
-                  Login
-                </span>
+              <button className="bg-purple-500 hover:bg-purple-400 text-white px-4 py-2 rounded-full transition-colors duration-300">
+                Login
               </button>
             }
           />
@@ -216,8 +218,27 @@ export default function Home() {
                           transition={{ duration: 2, delay: 0.5 }}>
                 {
                   messages.length <= 0 && (
-                    <div className="w-full flex items-center justify-center font-thin text-lg text-neutral-400 text-center">
-                      Analyze social trends
+                    <div className="grid grid-cols-2 gap-4 w-full mb-6">
+                      {[
+                        "What kind of meme currently is on the rise?",
+                        "Analyze CHILLGUY TikTok success story.",
+                        "Analyze TON meme ecosystem top candidates!",
+                        "What is the success rate of holding memecoins longterm?"
+                      ].map((question, index) => (
+                        <motion.div 
+                          key={index}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            // Use the handleInputChange function to update the input state
+                            handleInputChange({ target: { value: question } } as React.ChangeEvent<HTMLInputElement>);
+                            handleSubmit(new Event('submit') as any);
+                          }}
+                          className="bg-white/10 p-4 rounded-lg cursor-pointer hover:bg-white/20 transition-all duration-300 text-neutral-300 text-sm"
+                        >
+                          {question}
+                        </motion.div>
+                      ))}
                     </div>
                   )
                 }
@@ -228,7 +249,17 @@ export default function Home() {
                     <div key={m.id} className="font-bold text-xl">{m.content}</div>
                   )
                   return (
-                    <div key={m.id} className="mb-2 text-neutral-400">{m.content}</div>
+                    <div key={m.id} className="mb-2 text-neutral-400">
+                      <ReactMarkdown 
+                        components={{
+                          p: ({node, ...props}) => (
+                            <p {...props} style={{ display: 'inline', marginBottom: '0.5em' }} />
+                          )
+                        }}
+                      >
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
                   )
                 })
               }
@@ -242,7 +273,15 @@ export default function Home() {
                       transition={{ duration: 0.75 }}
                       className="mb-2 text-neutral-400"
                     >
-                      {chunk}
+                      <ReactMarkdown
+                        components={{
+                          p: ({node, ...props}) => (
+                            <p {...props} style={{ display: 'inline', marginBottom: '0.5em' }} />
+                          )
+                        }}
+                      >
+                        {chunk}
+                      </ReactMarkdown>
                     </motion.span>
                   ))}
                 </div>
