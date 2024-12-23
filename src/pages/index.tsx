@@ -93,7 +93,7 @@ export default function Home() {
   const wallet = primaryWallet?.address;
 
   useEffect(() => {
-    const getWalletBalance = async (retryCount = 0, maxRetries = 3) => {
+    const getWalletBalance = async (retryCount = 0, maxRetries = 3): Promise<void> => {
       try {
         const rpc = "https://solana-mainnet.g.alchemy.com/v2/2iQE49GfCoIgu9cVwP5VAvcAG7mWHFaF";
         const connection = new Connection(rpc, "confirmed");
