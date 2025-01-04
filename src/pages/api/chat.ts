@@ -9,6 +9,10 @@ export default async function POST(req: Request) {
   const input = messages[messages.length - 1].content;
   const url = process.env.AGENT_URL || ""
 
+  // Add timeout controller
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+
   // Call the local agent server
   let response;
   try {
@@ -20,8 +24,11 @@ export default async function POST(req: Request) {
         body: JSON.stringify({
           text: input,
         }),
+        signal: controller.signal, // Add abort signal
       } 
     );
+
+    clearTimeout(timeoutId); // Clear timeout if request succeeds
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -41,7 +48,17 @@ export default async function POST(req: Request) {
     });
 
   } catch (error) {
+    clearTimeout(timeoutId); // Clear timeout if request fails
     console.error('Error:', error);
+    
+    // Specific error message for timeout
+    if (error instanceof Error && 'name' in error && error.name === 'AbortError') {
+      return new Response(JSON.stringify({ error: 'Request timed out' }), {
+        status: 504,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     return new Response(JSON.stringify({ error: 'Failed to fetch from agent server' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
