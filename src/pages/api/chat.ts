@@ -1,39 +1,5 @@
-import { StreamingTextResponse } from 'ai'
-
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
-
-function createReadableStream(responseText: string): ReadableStream {
-  // Create a new ReadableStream that simulates streaming with word-by-word delay
-  const stream = new ReadableStream({
-    start(controller) {
-      const encoder = new TextEncoder();
-      const words = responseText.split(/\s+/);
-      
-      let index = 0;
-      
-      const streamWords = () => {
-        if (index < words.length) {
-          // Encode and enqueue the next word with a space
-          const wordToEnqueue = words[index] + (index < words.length - 1 ? ' ' : '');
-          controller.enqueue(encoder.encode(wordToEnqueue));
-          index++;
-
-          // Schedule the next word with a slight delay
-          setTimeout(streamWords, 50 + Math.random() * 100);
-        } else {
-          // Close the stream when all words are sent
-          controller.close();
-        }
-      };
-
-      // Start streaming words
-      streamWords();
-    }
-  });
-
-  return stream;
-}
 
 export default async function POST(req: Request) {
   // Extract the `messages` from the body of the request
@@ -41,22 +7,18 @@ export default async function POST(req: Request) {
 
   // Get the last message as input
   const input = messages[messages.length - 1].content;
-
-  const agentId = process.env.AGENT_ID || ""
   const url = process.env.AGENT_URL || ""
 
   // Call the local agent server
   let response;
   try {
     response = await fetch(
-      `${url}/${agentId}/trends`,
+      `${url}/trends`,
       {
         method: "POST", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: input,
-          userId: "user",
-          userName: "User",
         }),
       } 
     );
@@ -68,12 +30,15 @@ export default async function POST(req: Request) {
     const data = await response.json();
     console.log(data);
 
-    // Extract the trendsResponse text
-    const responseText = data.trendsResponse || '';
+    const platformTrends = data.platformTrends || [];
+    const responseText = platformTrends.map((trend: any) => 
+      `**${trend.platform}**:\n\n\n\n${trend.trendsResponse}\n\n\n\n---`
+    ).join('\n\n\n\n');
 
-    // Create a readable stream from the response text
-    const stream = createReadableStream(responseText);
-    return new StreamingTextResponse(stream);
+    return new Response(responseText, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' }
+    });
 
   } catch (error) {
     console.error('Error:', error);
