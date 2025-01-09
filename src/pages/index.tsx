@@ -36,7 +36,7 @@ function LoginOverlay() {
         exit={{ scale: 0.5, opacity: 0 }}
         className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md mx-4"
       >
-        <h2 className="text-xl font-bold mb-4 text-white">Welcome to Agent Trends terminal!</h2>
+        <h2 className="text-xl font-bold mb-4 text-white text-center">Welcome to Trends Agent!</h2>
         <p className="text-gray-300 mb-6">
           Please connect your wallet to access the terminal.
         </p>
@@ -72,7 +72,7 @@ function InsufficientBalanceModal({ onClose }: { onClose: () => void }) {
       >
         <h2 className="text-xl font-bold mb-4 text-white">Insufficient Balance</h2>
         <p className="text-gray-300 mb-6">
-          You need at least 2 TRENDS tokens to use this feature. Please acquire more tokens to continue.
+          You need at least 500,000 $TRENDS tokens to use this feature. Please acquire more tokens to continue.
         </p>
         <button
           onClick={onClose}
@@ -167,7 +167,7 @@ export default function Home() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const balance = parseFloat(solBalance);
-    if (balance < 2) {
+    if (balance < 5000000) {
       setShowBalanceWarning(true);
       return;
     }
