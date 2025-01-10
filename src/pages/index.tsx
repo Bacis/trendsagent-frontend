@@ -121,7 +121,7 @@ export default function Home() {
 
           // Get balance of specific token
           const specificTokenAccount = tokenAccounts.value.find(account => 
-            account.account.data.parsed.info.mint === "EuVdc7EoPTrXme4FbzrWQfeJicCTDWWRP79u3i2ZeXyt"
+            account.account.data.parsed.info.mint === "GrSiUc7eq9UmYw6cBjiucdWQXANZgmB9mS6nNCP8pump"
           );
 
           const specificTokenBalance = specificTokenAccount 
@@ -167,10 +167,10 @@ export default function Home() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const balance = parseFloat(solBalance);
-    if (balance < 5000000) {
-      setShowBalanceWarning(true);
-      return;
-    }
+    // if (balance < 5000000) {
+    //   setShowBalanceWarning(true);
+    //   return;
+    // }
     handleSubmit(e as any);
   };
 
