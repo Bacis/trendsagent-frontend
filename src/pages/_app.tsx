@@ -12,8 +12,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <DynamicComponent
       settings={{
-        // Find your environment id at https://app.dynamic.xyz/dashboard/developer
-        environmentId: "62f84955-9b9e-414f-ac3e-c696e48b3aa8",
+        environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "",
         walletConnectors: [SolanaWalletConnectors],
       }}
     >
