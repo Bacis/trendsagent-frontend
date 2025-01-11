@@ -70,7 +70,7 @@ function InsufficientBalanceModal({ onClose }: { onClose: () => void }) {
         className="bg-zinc-800 p-6 rounded-lg shadow-lg max-w-md mx-4"
         onClick={e => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold mb-4 text-white">Currently on Maintenance work. Please check back later.</h2>
+        <h2 className="text-xl font-bold mb-4 text-white">Token Gated Access</h2>
         <p className="text-gray-300 mb-6">
           You need at least 500,000 $TRENDS tokens to use this feature. Please acquire more tokens to continue.
         </p>
@@ -167,7 +167,7 @@ export default function Home() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const balance = parseFloat(solBalance);
-    if (balance < 5000000000) {
+    if (balance < 500000) {
       setShowBalanceWarning(true);
       return;
     }
